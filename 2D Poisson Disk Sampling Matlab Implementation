@@ -1,0 +1,74 @@
+close all;
+clear all;
+clc;
+
+%%  create domain for PDS
+x = 100;
+y = 100;
+x0 = x*rand;
+y0 = y*rand;
+% figure
+% plot(x0, y0, 'ro', 'markerfacecolor','r', 'markersize', 12)
+%% creating new candidates
+N = 5;
+d = 1;
+%% sample list
+sample_list_coordinates = [x0;y0];
+size_sample = size(sample_list_coordinates);
+active_list_coordinates = [x0;y0];
+
+%% random index
+termination_number = 0;
+figure
+while(true)
+    termination_number = termination_number + 1;
+    %
+    %hold on;
+    random_choose = ceil(size(active_list_coordinates,2)*rand);
+    %plot(active_list_coordinates(1,random_choose), active_list_coordinates(2,random_choose), 'ko')
+    new_x = zeros(N);
+    new_y = zeros(N);
+    for i = 1:N
+        angle = 2*pi*rand;
+        radius = d*(rand+1);
+        delta_x = radius*cos(angle);
+        delta_y = radius*sin(angle);
+        new_x(i) = active_list_coordinates(1,random_choose) + delta_x;
+        new_y(i) = active_list_coordinates(2,random_choose) + delta_y;
+    end
+    hold on
+    plot(new_x, new_y, 'go', 'markerfacecolor','g', 'markersize', 8)
+    logic_array = [];
+    for k = 1:N
+        collision = false;
+        %size(sample_list_coordinates,2)
+        for j = 1:size(sample_list_coordinates,2)
+            distance = sqrt(sum((new_x(k)-sample_list_coordinates(1,j))^2+(new_y(k)-sample_list_coordinates(2,j))^2))
+            if (distance<d)         
+                collision = true;
+                break
+            end
+        end
+        
+        if ~collision
+            %disp('new point!');
+            % move the point into a active list
+            query_point = [new_x(k);new_y(k)];
+            active_list_coordinates = [active_list_coordinates, query_point];
+            sample_list_coordinates = [sample_list_coordinates, query_point];
+        end
+        logic_array(k) = collision
+    end
+    
+    if sum(logic_array)==N
+        active_list_coordinates(:,random_choose)=[];
+    end
+    
+    if termination_number == 100
+        break
+    end
+
+end
+plot(sample_list_coordinates(1,:), sample_list_coordinates(2,:), 'ro', 'markerfacecolor','r', 'markersize', 8)
+
+
